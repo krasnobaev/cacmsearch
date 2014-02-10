@@ -1,25 +1,22 @@
-#!/bin/bash
-
 # Introduction
 
 ## Status
 In work
 
-## Software used
+## Software/Data used / Licensing
 Search engine - Apache Lucene (Java)
 Calculations - Octave
 Data Extraction - awk, grep, tr
 Environment - bash, ubuntu/linux
 Supplementary - gvim/vim or smilar
 
-## System/Software Requirements/Dependencies
-$ echo $CLASSPATH
-/opt/lucene/core/lucene-core-4.6.1.jar:/opt/lucene/queryparser/lucene-queryparser-4.6.1.jar:/opt/lucene/demo/lucene-demo-4.6.1.jar:/opt/lucene/analysis/common/lucene-analyzers-common-4.6.1.jar
+cacm corpora
 
 ## Environment
-$ ls | sort
+$ ls | sortcacm.*
+
 README							
-stub.sh 						
+process.sh 						
 
 cacm.queries 					
 cacm.queries.refined 			
@@ -44,8 +41,6 @@ Usage: java org.apache.lucene.demo.SearchFiles [-index dir] [-field f] [-repeat 
 cd ~/git/cacmsearch/
 
 # 1. Indexing
-## Corpora: ~/data/cacm/search-engines-book.com/cacm.html/
-$ java org.apache.lucene.demo.IndexFiles -docs ~/data/cacm/search-engines-book.com/cacm.html/ -index ~/data/index/lucene/cacm2/
 
 # 2. Query construstion
 Some examples:
@@ -66,38 +61,9 @@ awk '{ gsub(/^ */,"",$1) ; print $0 }' > queries.txt
 gvim cacm.queries > cacm.queries
 
 # 3. Retrieval running / SERP catching
-## SERP 10
-java org.apache.lucene.demo.SearchFiles -index ~/data/index/lucene/cacm2/index -queries queries2.txt -paging 10 > cacm.lucene.serp.top10
-## SERP 100
-java org.apache.lucene.demo.SearchFiles -index ~/data/index/lucene/cacm2/index -queries queries2.txt -paging 100 > cacm.lucene.serp.top100
-## SERP all
-java org.apache.lucene.demo.SearchFiles -index ~/data/index/lucene/cacm2/index -queries queries2.txt -paging 4000 > cacm.lucene.serp
 
 # 4. Rel preparations
 ## 4.1. SERP refine
-$ awk 'BEGIN {cnt=0;}
-	$1 ~ /Searching/ {cnt++;}
-	$1 !~ /Searching/ && $2 !~ /total/ {
-		gsub(". /usr/data/CACM/search-engines-book.com/cacm.html/", "; ");
-		gsub(".html", "; ");
-		print cnt"; "$0
-	}' < cacm.lucene.serp.top10 > cacm.lucene.serp.top10
-$ awk 'BEGIN {cnt=0;}
-	$1 ~ /Searching/ {cnt++;}
-	$1 !~ /Searching/ && $2 !~ /total/ {
-		gsub(". /usr/data/CACM/search-engines-book.com/cacm.html/", "; ");
-		gsub(".html", "; ");
-		print cnt"; "$0
-	}' < cacm.lucene.serp.top100 > cacm.lucene.serp.top100
-$ awk 'BEGIN {cnt=0;}
-	$1 ~ /Searching/ {cnt++;}
-	$1 !~ /Searching/ && $2 !~ /total/ {
-		gsub(". /usr/data/CACM/search-engines-book.com/cacm.html/", "; ");
-		gsub(".html", "; ");
-		print cnt"; "$0
-	}' < cacm.lucene.serp > cacm.lucene.serp
-
-$ tr ';' ' ' < cacm.lucene.serp.refined | awk 'BEGIN {cnt=0;} $1 ~ cnt {printf substr($3,6,4) " "} $1 > cnt {cnt++;print '\n'}' > cacm.lucene.serp.postings
 
 # 5. Results calculations
 
