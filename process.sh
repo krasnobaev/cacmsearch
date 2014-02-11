@@ -138,7 +138,7 @@ function f2 {
 #===============================================================================
 function f3 {
 	echo '3. Retrieval running / SERP gathering'
-	PARAMS='-index '$LUCENE_INDEX' -queries $QUERIES'
+	PARAMS="-index $LUCENE_INDEX -queries $QUERIES"
 	## SERP 10
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP_PREFIX.top10
 	## SERP 100
