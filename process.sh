@@ -93,7 +93,7 @@ function f0 {
 # DESCRIPTION : Indexing
 #===============================================================================
 function f1 {
-	echo '1. Indexing'
+	echo '1. Indexing from: ' $CACM_CORPUS ' to: ' $LUCENE_INDEX
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
 
 	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
@@ -254,10 +254,16 @@ if [[ -e $LUCENE_INDEX/segments.gen ]]
 then
 	echo 'Index exists, skipping indexing'
 else
-	echo 'Indexing from: ' $CACM_CORPUS ' to: ' $LUCENE_INDEX
 	f1
 fi
-f2
+
+if [[ -s $QUERIES ]]
+then
+	echo 'Queries exist, query preparation skipping'
+else
+	f2
+fi
+
 f3
 f4
 f5
