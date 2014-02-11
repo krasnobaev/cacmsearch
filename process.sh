@@ -95,6 +95,12 @@ function f0 {
 function f1 {
 	echo '1. Indexing'
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
+
+	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #===  FUNCTION  ================================================================
@@ -114,6 +120,12 @@ function f2 {
 	
 	# 5. removing some syntactical errors
 	awk '{ gsub("", "") ; print $0 }' $QUERIES
+
+	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #===  FUNCTION  ================================================================
@@ -129,6 +141,12 @@ function f3 {
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 100 > $SERP_PREFIX.top100
 	## SERP all
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 4000 > $SERP_PREFIX
+
+	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #===  FUNCTION  ================================================================
@@ -163,6 +181,12 @@ function f4 {
 		awk 'BEGIN {cnt=0;}
 			$1 ~ cnt {printf substr($3,6,4) " "}
 			$1 > cnt {cnt++;print "\n"}' > $SERP_PREFIX.postings
+
+	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #===  FUNCTION  ================================================================
@@ -185,6 +209,12 @@ function f5 {
 			gsub(". $CACM_CORPUS", "; ");
 			gsub(".html", "; ");
 			print cnt"; "$0}' < $SERP_PREFIX.top10 &> $METRICS
+
+	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #===  FUNCTION  ================================================================
@@ -193,7 +223,12 @@ function f5 {
 #==============================================================================
 function f6 {
 	echo '6. Results comparing'
-	true;
+
+	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	if [[ $REPLY =~ ^[Nn]$ ]]
+	then
+		exit 1
+	fi
 }
 
 #-------------------------------------------------------------------------------
