@@ -67,7 +67,7 @@ function clean {
 #        .bashrc
 #===============================================================================
 function f0 {
-	echo "0. Environment check"
+	echo '0. Environment check'
 #	JAVA_HOME=/usr/lib/jvm/default-java/
 #	export JAVA_HOME	echo 'Current CLASSPATH: ' $CLASSPATH
 #	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/core/lucene-core-4.6.1.jar
@@ -88,7 +88,7 @@ function f0 {
 # DESCRIPTION : Indexing
 #===============================================================================
 function f1 {
-	echo "1. Indexing"
+	echo '1. Indexing'
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
 }
 
@@ -97,7 +97,7 @@ function f1 {
 # DESCRIPTION : Query preparation
 #===============================================================================
 function f2 {
-	echo "2. Query preparation"
+	echo '2. Query preparation'
 	# 1. extract questions
 	grep -Pzo "^[.]W(\n[^.][[:print:]]*)*" < $CACM_RAWQUERIES | \
 	# 2. get rid of unnecessary line feeds
@@ -116,7 +116,7 @@ function f2 {
 # DESCRIPTION : Retrieval running / SERP gathering
 #===============================================================================
 function f3 {
-	echo "3. Retrieval running / SERP gathering"
+	echo '3. Retrieval running / SERP gathering'
 	PARAMS='-index '$LUCENE_INDEX' -queries $QUERIES'
 	## SERP 10
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP_PREFIX.top10
@@ -131,7 +131,7 @@ function f3 {
 # DESCRIPTION : Data extraction from SERPs
 #===============================================================================
 function f4 {
-	echo "4. Data extraction from SERPs"
+	echo '4. Data extraction from SERPs'
 	## 4.1. SERP refine
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
@@ -165,7 +165,7 @@ function f4 {
 # DESCRIPTION : Metrics Calculation
 #===============================================================================
 function f5 {
-	echo "5. Metrics Calculation"
+	echo '5. Metrics Calculation'
 	## 1. calc Relevant items
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
@@ -187,7 +187,7 @@ function f5 {
 # DESCRIPTION : Results Comparing
 #==============================================================================
 function f6 {
-	echo "6. Results comparing"
+	echo '6. Results comparing'
 	true;
 }
 
@@ -197,7 +197,7 @@ function f6 {
 while getopts ":c" o; do
 	case "$o" in
 	c)
-		echo "Cleaning out . . ." >&2
+		echo 'Cleaning out . . .' >&2
 		clean
 		exit 0
 		;;
@@ -212,7 +212,7 @@ f0
 
 if [[ -e $LUCENE_INDEX/segments.gen ]]
 then
-	echo "Index exists, skipping indexing"
+	echo 'Index exists, skipping indexing'
 else
 	echo 'Indexing from: ' $CACM_CORPUS ' to: ' $LUCENE_INDEX
 	f1
