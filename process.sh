@@ -16,16 +16,16 @@
 # Globals
 
 # Corpora
-CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
-CACM2='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/cacm.tar.gz'
-CACM2DIR='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/'
-CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
-CACM3DIR='http://www.search-engines-book.com/collections/'
+# CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
+# CACM2='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/cacm.tar.gz'
+# CACM2DIR='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/'
+# CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
+# CACM3DIR='http://www.search-engines-book.com/collections/'
 
 # input
 CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
-CACM_RAWQUERIES='/usr/data/cacm/ir.dcs.gla.ac.uk/query.text'
-CACM_REL='cacm.rel'
+CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
+CACM_REL='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
 
 # mediate folder/files
 LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
@@ -39,8 +39,6 @@ METRICS='metrics'
 #===  FUNCTION  ================================================================
 # NAME : clean
 # DESCRIPTION : cleaning generated files
-# PARAMETERS : 
-# RETURNS : 
 #===============================================================================
 function clean {
 	read -p 'Clean index? ' -n 1 -r; printf '\n'
@@ -61,15 +59,15 @@ function clean {
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : System/Software Requirements/Dependencies
+# NAME : f0
+# DESCRIPTION : Environment check
+#        System/Software Requirements/Dependencies
 #        https://lucene.apache.org/core/4_0_0/demo/overview-summary.html#Setting_your_CLASSPATH
 #        http://stackoverflow.com/questions/9329650/java-classpath-linux
 #        .bashrc
-# PARAMETERS : 
-# RETURNS : 
 #===============================================================================
-function f00 {
+function f0 {
+	echo "0. Environment check"
 #	JAVA_HOME=/usr/lib/jvm/default-java/
 #	export JAVA_HOME	echo 'Current CLASSPATH: ' $CLASSPATH
 #	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/core/lucene-core-4.6.1.jar
@@ -77,7 +75,7 @@ function f00 {
 #	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/demo/lucene-demo-4.6.1.jar
 #	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/analysis/common/lucene-analyzers-common-4.6.1.jar
 #	JAVA_HOME=/usr/lib/jvm/default-java/
-	echo "Following files must be contained in $CLASSPATH:"
+	echo 'Following files must be contained in CLASSPATH:'
 	echo '   lucene/core/lucene-core-4.6.1.jar'
 	echo '   lucene/queryparser/lucene-queryparser-4.6.1.jar'
 	echo '   lucene/demo/lucene-demo-4.6.1.jar'
@@ -86,62 +84,39 @@ function f00 {
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : Query preparation
-# PARAMETERS : 
-# RETURNS : 
-#===============================================================================
-function f0 {
-	# 1. extract questions
-	grep -Pzo "^[.]W(\n[^.][[:print:]]*)*" < $CACM_RAWQUERIES | \
-		# 2. get rid of unnecessary line feeds
-	tr '\n' ' ' | \
-		# 3. split one query per line
-	awk '{ gsub(".W ", "\n") ; print $0 }' | \
-		# 4. remove double spaces and save results
-	awk '{ gsub(/^ */,"",$1) ; print $0 }' > $QUERIES
-}
-
-#===  FUNCTION  ================================================================
-# NAME : 
+# NAME : f1
 # DESCRIPTION : Indexing
-# PARAMETERS : 
-# RETURNS  : 
 #===============================================================================
 function f1 {
+	echo "1. Indexing"
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : Query construstion
-# PARAMETERS : 
-# RETURNS : 
+# NAME : f2
+# DESCRIPTION : Query preparation
 #===============================================================================
 function f2 {
-	## 2.1. extract questions
+	echo "2. Query preparation"
+	# 1. extract questions
 	grep -Pzo "^[.]W(\n[^.][[:print:]]*)*" < $CACM_RAWQUERIES | \
-	
-	## 2.2. get rid of unnecessary line feeds
+	# 2. get rid of unnecessary line feeds
 	tr '\n' ' ' | \
-	
-	## 2.3. split one query per line
+	# 3. split one query per line
 	awk '{ gsub(".W ", "\n") ; print $0 }' | \
-	
-	## 2.4. remove double spaces and save results
+	# 4. remove double spaces and save results
 	awk '{ gsub(/^ */,"",$1) ; print $0 }' > $QUERIES
 	
-	## 2.5. removing some syntactical errors
+	# 5. removing some syntactical errors
 	awk '{ gsub("", "") ; print $0 }' $QUERIES
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : Retrieval running / SERP catching
-# PARAMETERS : 
-# RETURNS : 
+# NAME : f3
+# DESCRIPTION : Retrieval running / SERP gathering
 #===============================================================================
 function f3 {
+	echo "3. Retrieval running / SERP gathering"
 	PARAMS='-index '$LUCENE_INDEX' -queries $QUERIES'
 	## SERP 10
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP_PREFIX.top10
@@ -152,12 +127,11 @@ function f3 {
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : Rel preparations
-# PARAMETERS : 
-# RETURNS : 
+# NAME : f4
+# DESCRIPTION : Data extraction from SERPs
 #===============================================================================
 function f4 {
+	echo "4. Data extraction from SERPs"
 	## 4.1. SERP refine
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
@@ -187,12 +161,11 @@ function f4 {
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
-# DESCRIPTION : Results/metrics calculation
-# PARAMETERS : 
-# RETURNS : 
+# NAME : f5
+# DESCRIPTION : Metrics Calculation
 #===============================================================================
 function f5 {
+	echo "5. Metrics Calculation"
 	## 1. calc Relevant items
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
@@ -210,12 +183,11 @@ function f5 {
 }
 
 #===  FUNCTION  ================================================================
-# NAME : 
+# NAME : f6
 # DESCRIPTION : Results Comparing
-# PARAMETERS : 
-# RETURNS : 
 #==============================================================================
 function f6 {
+	echo "6. Results comparing"
 	true;
 }
 
@@ -246,9 +218,7 @@ else
 	f1
 fi
 f2
-echo test
 f3
-echo testagain
 f4
 f5
 f6
