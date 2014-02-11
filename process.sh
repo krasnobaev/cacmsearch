@@ -115,11 +115,15 @@ function f2 {
 	awk '{gsub(/^ */,"",$1); printf "%s ", $0}' | \
 	# 3. split one query per line
 	awk '{ gsub(".W ", "\n") ; print $0 }' | \
-	# 4. remove first line (it's empty)
-	awk '/./' > $QUERIES
-
-	# 5. removing some syntactical errors
-	awk '{ gsub("", "") ; print $0 }' $QUERIES
+	# 4. remove first line (it's empty) & line ending spaces
+	awk '/./' | awk '{$1=$1}1' |
+	# 5. remove syntactical errors
+	awk '{
+		gsub("/1;",   "\\/1)") ;
+		gsub("\"\\?", "\"\\\?") ;
+		gsub("*",     "\\*") ;
+		gsub(":,",    "\",") ;
+		gsub("/n",    "\\/n") ; print $0 }' > $QUERIES
 
 	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
