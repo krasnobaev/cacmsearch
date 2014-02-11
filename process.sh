@@ -46,12 +46,17 @@ function clean {
 	then
 		rm $LUCENE_INDEX/*
 	fi
-	read -p "Clean SERPs? " -n 1 -r; printf '\n'
+	read -p 'Clean queries? ' -n 1 -r; printf '\n'
+	if [[ -e $QUERIES && ($REPLY =~ ^[Yy]$) ]]
+	then
+		rm $QUERIES
+	fi
+	read -p 'Clean SERPs? ' -n 1 -r; printf '\n'
 	if [[ -e $SERP_PREFIX && ($REPLY =~ ^[Yy]$) ]]
 	then
 		rm $SERP_PREFIX*
 	fi
-	read -p "Clean metrics? " -n 1 -r; printf '\n'
+	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
 	if [[ -e $METRICS && ($REPLY =~ ^[Yy]$) ]]
 	then
 		rm $METRICS
