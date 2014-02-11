@@ -26,15 +26,11 @@ CACM3DIR='http://www.search-engines-book.com/collections/'
 CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
 CACM_RAWQUERIES='/usr/data/cacm/ir.dcs.gla.ac.uk/query.text'
 CACM_REL='cacm.rel'
-CACM_QUERIES=''
 
 # mediate folder/files
 LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
-
 QUERIES='queries.txt'
 SERP_PREFIX='cacm.lucene.serp'
-MAIN_SERP='serp'
-POSTINGS='postings'
 
 # output folder/files
 # WORKFOLDER='~/git/cacmsearch'
@@ -76,11 +72,11 @@ function clean {
 function f00 {
 #	JAVA_HOME=/usr/lib/jvm/default-java/
 #	export JAVA_HOME	echo 'Current CLASSPATH: ' $CLASSPATH
-	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/core/lucene-core-4.6.1.jar
-	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/queryparser/lucene-queryparser-4.6.1.jar
-	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/demo/lucene-demo-4.6.1.jar
-	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/analysis/common/lucene-analyzers-common-4.6.1.jar
-	JAVA_HOME=/usr/lib/jvm/default-java/
+#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/core/lucene-core-4.6.1.jar
+#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/queryparser/lucene-queryparser-4.6.1.jar
+#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/demo/lucene-demo-4.6.1.jar
+#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/analysis/common/lucene-analyzers-common-4.6.1.jar
+#	JAVA_HOME=/usr/lib/jvm/default-java/
 	echo "Following files must be contained in $CLASSPATH:"
 	echo '   lucene/core/lucene-core-4.6.1.jar'
 	echo '   lucene/queryparser/lucene-queryparser-4.6.1.jar'
@@ -103,7 +99,7 @@ function f0 {
 		# 3. split one query per line
 	awk '{ gsub(".W ", "\n") ; print $0 }' | \
 		# 4. remove double spaces and save results
-	awk '{ gsub(/^ */,"",$1) ; print $0 }' > queries.txt
+	awk '{ gsub(/^ */,"",$1) ; print $0 }' > $QUERIES
 }
 
 #===  FUNCTION  ================================================================
@@ -133,10 +129,10 @@ function f2 {
 	awk '{ gsub(".W ", "\n") ; print $0 }' | \
 	
 	## 2.4. remove double spaces and save results
-	awk '{ gsub(/^ */,"",$1) ; print $0 }' > queries.txt
+	awk '{ gsub(/^ */,"",$1) ; print $0 }' > $QUERIES
 	
 	## 2.5. removing some syntactical errors
-	awk '{ gsub("", "") ; print $0 }' cacm.queries
+	awk '{ gsub("", "") ; print $0 }' $QUERIES
 }
 
 #===  FUNCTION  ================================================================
@@ -146,7 +142,7 @@ function f2 {
 # RETURNS : 
 #===============================================================================
 function f3 {
-	PARAMS='-index '$LUCENE_INDEX' -queries queries.txt'
+	PARAMS='-index '$LUCENE_INDEX' -queries $QUERIES'
 	## SERP 10
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP_PREFIX.top10
 	## SERP 100
@@ -168,21 +164,21 @@ function f4 {
 		$1 !~ /Searching/ && $2 !~ /total/ {
 			gsub(". $CACM_CORPUS", "; ");
 			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX.top10 > $SERP_PREFIX.top102
+			print cnt"; "$0}' < $SERP_PREFIX.top10 > $SERP_PREFIX.top10.refined
 
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
 		$1 !~ /Searching/ && $2 !~ /total/ {
 			gsub(". $CACM_CORPUS", "; ");
 			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX.top100 > $SERP_PREFIX.top1002
+			print cnt"; "$0}' < $SERP_PREFIX.top100 > $SERP_PREFIX.top100.refined
 
 	awk 'BEGIN {cnt=0;}
 		$1 ~ /Searching/ {cnt++;}
 		$1 !~ /Searching/ && $2 !~ /total/ {
 			gsub(". $CACM_CORPUS", "; ");
 			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX > "$SERP_PREFIX"2
+			print cnt"; "$0}' < $SERP_PREFIX > "$SERP_PREFIX".refined
 
 	tr ';' ' ' < $SERP_PREFIX.refined | \
 		awk 'BEGIN {cnt=0;}
