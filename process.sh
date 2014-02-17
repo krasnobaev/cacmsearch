@@ -96,7 +96,7 @@ function f1 {
 	echo '1. Indexing from: ' $CACM_CORPUS ' to: ' $LUCENE_INDEX
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
 
-	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
+	read -p '1. Indexing completed. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -125,7 +125,7 @@ function f2 {
 		gsub(":,",    "\",") ;
 		gsub("/n",    "\\/n") ; print $0 }' > $QUERIES
 
-	read -p 'End of function, Continue? ' -n 1 -r; printf '\n'
+	read -p '2. Query preparation completed. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -146,7 +146,7 @@ function f3 {
 	## SERP all
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 4000 > $SERP_PREFIX
 
-	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	read -p '3. SERPs collected. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -186,7 +186,7 @@ function f4 {
 			$1 ~ cnt {printf substr($3,6,4) " "}
 			$1 > cnt {cnt++;print "\n"}' > $SERP_PREFIX.postings
 
-	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -214,7 +214,7 @@ function f5 {
 			gsub(".html", "; ");
 			print cnt"; "$0}' < $SERP_PREFIX.top10 &> $METRICS
 
-	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	read -p '5. Metrics calculated. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -228,7 +228,7 @@ function f5 {
 function f6 {
 	echo '6. Results comparing'
 
-	read -p 'End of function. Continue? ' -n 1 -r; printf '\n'
+	read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
