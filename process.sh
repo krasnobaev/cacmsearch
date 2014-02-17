@@ -160,31 +160,23 @@ function f3 {
 function f4 {
 	echo '4. Data extraction from SERPs'
 	## 4.1. SERP refine
-	awk 'BEGIN {cnt=0;}
-		$1 ~ /Searching/ {cnt++;}
-		$1 !~ /Searching/ && $2 !~ /total/ {
-			gsub(". $CACM_CORPUS", "; ");
-			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX.top10 > $SERP_PREFIX.top10.refined
+	awk '$2 ~ /total/ {printf $1" ";}
+		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
+		gsub(".html", " "); printf $0;}
+		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX.top10 | \
+		awk '/./' > $SERP_PREFIX.top10.postings
 
-	awk 'BEGIN {cnt=0;}
-		$1 ~ /Searching/ {cnt++;}
-		$1 !~ /Searching/ && $2 !~ /total/ {
-			gsub(". $CACM_CORPUS", "; ");
-			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX.top100 > $SERP_PREFIX.top100.refined
+	awk '$2 ~ /total/ {printf $1" ";}
+		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
+		gsub(".html", " "); printf $0;}
+		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX.top100 | \
+		awk '/./' > $SERP_PREFIX.top100.postings
 
-	awk 'BEGIN {cnt=0;}
-		$1 ~ /Searching/ {cnt++;}
-		$1 !~ /Searching/ && $2 !~ /total/ {
-			gsub(". $CACM_CORPUS", "; ");
-			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX > "$SERP_PREFIX".refined
-
-	tr ';' ' ' < $SERP_PREFIX.refined | \
-		awk 'BEGIN {cnt=0;}
-			$1 ~ cnt {printf substr($3,6,4) " "}
-			$1 > cnt {cnt++;print "\n"}' > $SERP_PREFIX.postings
+	awk '$2 ~ /total/ {printf $1" ";}
+		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
+		gsub(".html", " "); printf $0;}
+		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX | \
+		awk '/./' > $SERP_PREFIX.postings
 
 	read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
