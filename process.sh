@@ -34,6 +34,7 @@ SERP_PREFIX='cacm.lucene.serp'
 
 # output folder/files
 # WORKFOLDER='~/git/cacmsearch'
+RELATIONS='relations.postings'
 METRICS='metrics'
 
 #===  FUNCTION  ================================================================
@@ -187,26 +188,20 @@ function f4 {
 
 #===  FUNCTION  ================================================================
 # NAME : f5
-# DESCRIPTION : Metrics Calculation
+# DESCRIPTION : Relations preparing
 #===============================================================================
 function f5 {
-	echo '5. Metrics Calculation'
-	## 1. calc Relevant items
-	awk 'BEGIN {cnt=0;}
-		$1 ~ /Searching/ {cnt++;}
-		$1 !~ /Searching/ && $2 !~ /total/ {
-			gsub(". $CACM_CORPUS", "; ");
-			gsub(".html", "; ");
-			print cnt"; "$0}' < $CACM_REL > $METRICS
-	## 2. 
-	awk 'BEGIN {cnt=0;}
-		$1 ~ /Searching/ {cnt++;}
-		$1 !~ /Searching/ && $2 !~ /total/ {
-			gsub(". $CACM_CORPUS", "; ");
-			gsub(".html", "; ");
-			print cnt"; "$0}' < $SERP_PREFIX.top10 &> $METRICS
-
-	read -p '5. Metrics calculated. Continue? ' -n 1 -r; printf '\n'
+	echo '5. Relations preparing'
+	awk 'BEGIN {prev="";}
+		prev !~ $1 {printf "\n"$1" ";}
+		{printf $2" "; prev=$1;}' < $CACM_REL | \
+	awk '/./' | \
+	awk 'BEGIN {cnt=1;}
+		{gsub("^0","");}
+		{while (cnt<$1) {printf "\n";cnt++}}
+		cnt ~ $1 {$1=""; print $0; cnt++;}' | \
+	awk '{gsub("^ ",""); print;}' > $RELATIONS
+	read -p '5 Relations prepared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -260,8 +255,26 @@ else
 	f2
 fi
 
-f3
-f4
-f5
+if [[ -s $SERP_PREFIX && (-s $SERP_PREFIX.top10) && (-s $SERP_PREFIX.top100) ]]
+then
+	echo 'SERPs exist, SERP gathering skipping'
+else
+	f3
+fi
+
+if [[ -s $SERP_PREFIX.postings && (-s $SERP_PREFIX.postings) && (-s $SERP_PREFIX.postings) ]]
+then
+	echo 'SERP postings exist, SERP postings generation skipping'
+else
+	f4
+fi
+
+if [[ -s $RELATIONS ]]
+then
+	echo 'Relations exist, Relations postings generation skipping'
+else
+	f5
+fi
+
 f6
 
