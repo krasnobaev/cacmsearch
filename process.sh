@@ -45,22 +45,29 @@ function clean {
 	read -p 'Clean index? ' -n 1 -r; printf '\n'
 	if [[ -e $LUCENE_INDEX && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm $LUCENE_INDEX/*
+		rm "$LUCENE_INDEX/"*
 	fi
 	read -p 'Clean queries? ' -n 1 -r; printf '\n'
 	if [[ -e $QUERIES && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm $QUERIES
+		rm "$QUERIES"
 	fi
 	read -p 'Clean SERPs? ' -n 1 -r; printf '\n'
 	if [[ -e $SERP_PREFIX && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm $SERP_PREFIX*
+		rm "$SERP_PREFIX" "$SERP_PREFIX.top10" "$SERP_PREFIX.top100" \
+			"$SERP_PREFIX.postings" "$SERP_PREFIX.top10.postings" \
+			"$SERP_PREFIX.top100.postings"
+	fi
+	read -p 'Clean relations? ' -n 1 -r; printf '\n'
+	if [[ -e $RELATIONS && ($REPLY =~ ^[Yy]$) ]]
+	then
+		rm "$RELATIONS"
 	fi
 	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
 	if [[ -e $METRICS && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm $METRICS
+		rm "$METRICS" "$RIR" "$RIR.top10" "$RIR.top100" "$REL" "$RET"
 	fi
 }
 
@@ -87,6 +94,35 @@ function f0 {
 	echo '   lucene/demo/lucene-demo-4.6.1.jar'
 	echo '   lucene/analysis/common/lucene-analyzers-common-4.6.1.jar'
 #	export CLASSPATH
+
+	# Corpora
+	# CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
+	# CACM2='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/cacm.tar.gz'
+	# CACM2DIR='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/'
+	# CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
+	# CACM3DIR='http://www.search-engines-book.com/collections/'
+
+	# input
+	CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
+	CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
+	CACM_REL='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
+
+	# mediate folder/files
+	LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
+	QUERIES='queries'
+	SERP_PREFIX='cacm.lucene.serp'
+
+	# output folder/files
+	# WORKFOLDER='~/git/cacmsearch'
+	RELATIONS='relations.postings'
+	METRICS='metrics'
+
+	# Relevant Items Retrieved
+	RIR='relevant_items_retrieved'
+	# Relevant Items
+	REL=$RELATIONS'.sum'
+	# Retrieved Items
+	RET=$SERP_PREFIX'.sum'
 }
 
 #===  FUNCTION  ================================================================
@@ -225,6 +261,9 @@ function f6 {
 #-------------------------------------------------------------------------------
 # main()
 #-------------------------------------------------------------------------------
+
+f0
+
 while getopts ":c" o; do
 	case "$o" in
 	c)
@@ -238,8 +277,6 @@ while getopts ":c" o; do
 		;;
 	esac
 done
-
-f0
 
 if [[ -e $LUCENE_INDEX/segments.gen ]]
 then
