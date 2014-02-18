@@ -37,6 +37,13 @@ SERP_PREFIX='cacm.lucene.serp'
 RELATIONS='relations.postings'
 METRICS='metrics'
 
+# Relevant Items Retrieved
+RIR='relevant_items_retrieved'
+# Relevant Items
+REL=$RELATIONS'.sum'
+# Retrieved Items
+RET=$SERP_PREFIX'.sum'
+
 #===  FUNCTION  ================================================================
 # NAME : clean
 # DESCRIPTION : cleaning generated files
@@ -251,7 +258,34 @@ function f5 {
 function f6 {
 	echo '6. Results comparing'
 
-	read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
+	for i in {1..64}; do
+		cat <(head --lines=$i $SERP_PREFIX.top10.postings | \
+				tail --lines=1 && \
+			head --lines=$i $RELATIONS | \
+				tail --lines=1) | \
+		tr ' ' '\n' | awk /./ | sort | uniq -c | \
+			grep " 2 " | wc -l;
+	done > $RIR.top10
+
+	for i in {1..64}; do
+		cat <(head --lines=$i $SERP_PREFIX.top100.postings | \
+				tail --lines=1 && \
+			head --lines=$i $RELATIONS | \
+				tail --lines=1) | \
+		tr ' ' '\n' | awk /./ | sort | uniq -c | \
+			grep " 2 " | wc -l;
+	done > $RIR.top100
+
+	for i in {1..64}; do
+		cat <(head --lines=$i $SERP_PREFIX.postings | \
+				tail --lines=1 && \
+			head --lines=$i $RELATIONS | \
+				tail --lines=1) | \
+		tr ' ' '\n' | awk /./ | sort | uniq -c | \
+			grep " 2 " | wc -l;
+	done > $RIR
+
+read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
