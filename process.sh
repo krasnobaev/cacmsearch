@@ -60,7 +60,7 @@ function clean {
 		rm "$QUERIES"
 	fi
 	read -p 'Clean SERPs? ' -n 1 -r; printf '\n'
-	if [[ -e $SERP_PREFIX && ($REPLY =~ ^[Yy]$) ]]
+	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		rm "$SERP_PREFIX" "$SERP_PREFIX.top10" "$SERP_PREFIX.top100" \
 			"$SERP_PREFIX.postings" "$SERP_PREFIX.top10.postings" \
@@ -72,7 +72,7 @@ function clean {
 		rm "$RELATIONS"
 	fi
 	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
-	if [[ -e $METRICS && ($REPLY =~ ^[Yy]$) ]]
+	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		rm "$METRICS" "$RIR" "$RIR.top10" "$RIR.top100" "$REL" "$RET"
 	fi
@@ -222,6 +222,8 @@ function f4 {
 		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX | \
 		awk '/./' > $SERP_PREFIX.postings
 
+	grep "total matching" $SERP_PREFIX | awk '{print $1}' > $RET
+
 	read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
@@ -244,7 +246,10 @@ function f5 {
 		{while (cnt<$1) {printf "\n";cnt++}}
 		cnt ~ $1 {$1=""; print $0; cnt++;}' | \
 	awk '{gsub("^ ",""); print;}' > $RELATIONS
-	read -p '5 Relations prepared. Continue? ' -n 1 -r; printf '\n'
+
+	awk '{printf NF"\n"}' $RELATIONS > $REL
+
+	read -p '5. Relations prepared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -258,6 +263,7 @@ function f5 {
 function f6 {
 	echo '6. Results comparing'
 
+	# count number of intersected documents for each query
 	for i in {1..64}; do
 		cat <(head --lines=$i $SERP_PREFIX.top10.postings | \
 				tail --lines=1 && \
