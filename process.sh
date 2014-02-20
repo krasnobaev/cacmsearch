@@ -67,9 +67,9 @@ function clean {
 			"$SERP_PREFIX.top100.postings"
 	fi
 	read -p 'Clean relations? ' -n 1 -r; printf '\n'
-	if [[ -e $RELATIONS && ($REPLY =~ ^[Yy]$) ]]
+	if [[ -e $RELEVANT && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm "$RELATIONS"
+		rm "$RELEVANT"
 	fi
 	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Yy]$ ]]
@@ -109,27 +109,30 @@ function f0 {
 	# CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
 	# CACM3DIR='http://www.search-engines-book.com/collections/'
 
-	# input
+	# Input
 	CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
 	CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
 	CACM_REL='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
 
-	# mediate folder/files
+	# Work folders
 	LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
-	QUERIES='queries'
-	SERP_PREFIX='cacm.lucene.serp'
-
-	# output folder/files
 	# WORKFOLDER='~/git/cacmsearch'
-	RELATIONS='relations.postings'
-	METRICS='metrics'
 
-	# Relevant Items Retrieved
-	RIR='relevant_items_retrieved'
+	# File prefixes
+	CORPUS_PREFIX='cacm'
+	SE_PREFIX='lucene'
+	QUERIES=$CORPUS_PREFIX'.queries'
+	RELEVANT=$CORPUS_PREFIX'.relevant'
+	SERP_PREFIX=$CORPUS_PREFIX'.'$SE_PREFIX'.returned'
+
+	# Base metrics
+	RIR=$SERP_PREFIX'.relevant_items'
 	# Relevant Items
-	REL=$RELATIONS'.sum'
+	REL=$RELEVANT'.sum'
 	# Retrieved Items
 	RET=$SERP_PREFIX'.sum'
+
+	METRICS='metrics'
 }
 
 #===  FUNCTION  ================================================================
@@ -245,9 +248,9 @@ function f5 {
 		{gsub("^0","");}
 		{while (cnt<$1) {printf "\n";cnt++}}
 		cnt ~ $1 {$1=""; print $0; cnt++;}' | \
-	awk '{gsub("^ ",""); print;}' > $RELATIONS
+	awk '{gsub("^ ",""); print;}' > $RELEVANT
 
-	awk '{printf NF"\n"}' $RELATIONS > $REL
+	awk '{printf NF"\n"}' $RELEVANT > $REL
 
 	read -p '5. Relations prepared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
@@ -267,7 +270,7 @@ function f6 {
 	for i in {1..64}; do
 		cat <(head --lines=$i $SERP_PREFIX.top10.postings | \
 				tail --lines=1 && \
-			head --lines=$i $RELATIONS | \
+			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
 			grep " 2 " | wc -l;
@@ -276,7 +279,7 @@ function f6 {
 	for i in {1..64}; do
 		cat <(head --lines=$i $SERP_PREFIX.top100.postings | \
 				tail --lines=1 && \
-			head --lines=$i $RELATIONS | \
+			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
 			grep " 2 " | wc -l;
@@ -285,7 +288,7 @@ function f6 {
 	for i in {1..64}; do
 		cat <(head --lines=$i $SERP_PREFIX.postings | \
 				tail --lines=1 && \
-			head --lines=$i $RELATIONS | \
+			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
 			grep " 2 " | wc -l;
@@ -346,7 +349,7 @@ else
 	f4
 fi
 
-if [[ -s $RELATIONS ]]
+if [[ -s $RELEVANT ]]
 then
 	echo 'Relations exist, Relations postings generation skipping'
 else
