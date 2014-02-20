@@ -1,0 +1,25 @@
+A(:,1) =      REL = load ("cacm.relevant.sum");
+A(:,2) =      RET = load ("cacm.lucene.returned.sum");
+A(:,3) = tp = RIR = load ("cacm.lucene.returned.relevant_items");
+A(:,4) = tn = 
+A(:,5) = fp = 
+A(:,6) = fn = 
+
+A(:,7) = P = RIR./RET;
+A(:,8) = R = RIR./REL;
+
+A(:,9) = F = 2.*(P.*R)./(P.+R);
+A(:,10) = F2 = (1+2^2).*(P.*R)./((2^2*P).+R);
+A(:,11) = F05 = (1+0.5^2).*(P.*R)./((0.5^2*P).+R);
+
+A(:,12) = G = realsqrt(P.*R);
+
+A(:,13) = E = 1 .- F1;
+
+A(:,14) = A = 
+A(:,15) = Err = 
+
+plot(P,R,'.');
+ylabel('Precision');
+xlabel('Recall');
+
