@@ -10,39 +10,8 @@
 # AUTHOR : Aleksey Krasnobaev (https://github.com/krasnobaev)
 # COMPANY : ---
 # VERSION : 0.1 / 02/10/2014 10:38:53 PM MSK
-# LICENSE : 
+# LICENSE : MIT
 #===============================================================================
-
-# Globals
-
-# Corpora
-# CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
-# CACM2='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/cacm.tar.gz'
-# CACM2DIR='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/'
-# CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
-# CACM3DIR='http://www.search-engines-book.com/collections/'
-
-# input
-CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
-CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
-CACM_REL='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
-
-# mediate folder/files
-LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
-QUERIES='queries.txt'
-SERP_PREFIX='cacm.lucene.serp'
-
-# output folder/files
-# WORKFOLDER='~/git/cacmsearch'
-RELATIONS='relations.postings'
-METRICS='metrics'
-
-# Relevant Items Retrieved
-RIR='relevant_items_retrieved'
-# Relevant Items
-REL=$RELATIONS'.sum'
-# Retrieved Items
-RET=$SERP_PREFIX'.sum'
 
 #===  FUNCTION  ================================================================
 # NAME : clean
