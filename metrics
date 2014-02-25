@@ -1,3 +1,20 @@
+#!/usr/bin/octave
+#===============================================================================
+# FILE : metrics.octave
+# USAGE : octave> source metrics_calc
+#         bash> metrics_calc.m
+# DESCRIPTION : 
+
+# OPTIONS : ---
+# REQUIREMENTS : ---
+# AUTHOR : Aleksey Krasnobaev (https://github.com/krasnobaev)
+# COMPANY : 
+# VERSION : 0.1 / 02/23/2014 05:03:52 AM MSK
+# LICENSE : MIT
+#===============================================================================
+# Not a function file:
+1;
+
 A(:,1) =      REL = load ("cacm.relevant.sum");
 A(:,2) =      RET = load ("cacm.lucene.returned.sum");
 A(:,3) = tp = RIR = load ("cacm.lucene.returned.relevant_items");
@@ -19,13 +36,14 @@ A(:,13) = E = 1 .- F1;
 A(:,14) = Acc = (tp.+tn)./(tp.+fp.+fn.+tn);
 A(:,15) = Err = (fp.+fn)./(tp.+fp.+fn.+tn);
 
+# minimum, first quartile, median, third quartile, maximum, mean, standard deviation, skewness
 B = statistics(A)
 
 plot(P,R,'.');
 ylabel('Precision');
 xlabel('Recall');
 
-save cacm.lucene.metrics A
-save cacm.lucene.statistics B
+csvwrite ("cacm.lucene.metrics.csv", A')
+csvwrite ("cacm.lucene.statistics.csv", B')
 print ("cacm.lucene.precision_recall.png")
 
