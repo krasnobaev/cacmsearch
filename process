@@ -43,7 +43,7 @@ function clean {
 	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
-		rm "$METRICS" "$RIR" "$RIR.top10" "$RIR.top100" "$REL" "$RET"
+		rm "$METRICS" "$STAT" "$RIR" "$RIR.top10" "$RIR.top100" "$REL" "$RET"
 	fi
 }
 
@@ -101,7 +101,11 @@ function f0 {
 	# Retrieved Items
 	RET=$SERP_PREFIX'.sum'
 
-	METRICS='metrics'
+	METRICS=$CORPUS_PREFIX'.'$SE_PREFIX'.metrics.csv'
+	STAT=$CORPUS_PREFIX'.'$SE_PREFIX'.statistics.csv'
+
+	command -v trec_eval >/dev/null 2>&1 || { echo >&2 ':( trec_eval is not installed.'; }
+
 }
 
 #===  FUNCTION  ================================================================
@@ -262,6 +266,8 @@ function f6 {
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
 			grep " 2 " | wc -l;
 	done > $RIR
+
+	./metrics
 
 read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
