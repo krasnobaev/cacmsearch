@@ -81,7 +81,8 @@ function f0 {
 	# Input
 	CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
 	CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
-	CACM_REL='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
+	CACM_RELS='/usr/data/cacm/ftp.cs.cornell.edu/qrels.text'
+	CACM_QRELS='/usr/data/cacm/search-engines-book.com/cacm.rel'
 
 	# Work folders
 	LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
@@ -103,6 +104,7 @@ function f0 {
 
 	METRICS=$CORPUS_PREFIX'.'$SE_PREFIX'.metrics.csv'
 	STAT=$CORPUS_PREFIX'.'$SE_PREFIX'.statistics.csv'
+	TRECEVAL_OUT=$CORPUS_PREFIX'.'$SE_PREFIX'.trec'
 
 	command -v trec_eval >/dev/null 2>&1 || { echo >&2 ':( trec_eval is not installed.'; }
 
@@ -200,6 +202,13 @@ function f4 {
 
 	grep "total matching" $SERP_PREFIX | awk '{print $1}' > $RET
 
+	awk 'BEGIN {ln=1;} {
+			for(i=2; i<=NF; i++) {
+				printf ln" Q0 CACM-"$i" "i-1" "(NF-i+0.1)/NF" STANDARD\n"
+			}
+		}
+		{ln++;}' $SERP_PREFIX.postings > $SERP_PREFIX.trec_results
+
 	read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
@@ -215,7 +224,7 @@ function f5 {
 	echo '5. Relations preparing'
 	awk 'BEGIN {prev="";}
 		prev !~ $1 {printf "\n"$1" ";}
-		{printf $2" "; prev=$1;}' < $CACM_REL | \
+		{printf $2" "; prev=$1;}' < $CACM_RELS | \
 	awk '/./' | \
 	awk 'BEGIN {cnt=1;}
 		{gsub("^0","");}
@@ -268,6 +277,28 @@ function f6 {
 	done > $RIR
 
 	./metrics
+
+	trec_eval -q $CACM_QRELS $SERP_PREFIX.trec_results \
+		> $TRECEVAL_OUT
+
+	printf "metric\query, " > $TRECEVAL_OUT'.csv'
+	for y in $(awk '{print $2;}' $TRECEVAL_OUT | sort -g | uniq); do
+		printf "$y, " >> $TRECEVAL_OUT'.csv';
+	done
+	echo >> $TRECEVAL_OUT'.csv'
+	for x in $(
+		awk '{print $1;}' $TRECEVAL_OUT | \
+			sort | uniq -c | sort -k1,1rn -t'_' -k2,2n | \
+			awk '{print $2;}'
+		); do
+		printf $x", ";
+		for y in $(awk '{print $2;}' $TRECEVAL_OUT | sort -g | uniq); do
+			grep "^$x " $TRECEVAL_OUT | \
+				grep -P "\t$y\t" | \
+				awk '{printf $3", "}';
+		done;
+		echo '';
+	done >> $TRECEVAL_OUT'.csv';
 
 read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 	if [[ $REPLY =~ ^[Nn]$ ]]
