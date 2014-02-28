@@ -18,29 +18,39 @@
 # DESCRIPTION : cleaning generated files
 #===============================================================================
 function clean {
-	read -p 'Clean index? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p 'Clean index? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ -e $LUCENE_INDEX && ($REPLY =~ ^[Yy]$) ]]
 	then
 		rm "$LUCENE_INDEX/"*
 	fi
-	read -p 'Clean queries? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p 'Clean queries? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ -e $QUERIES && ($REPLY =~ ^[Yy]$) ]]
 	then
 		rm "$QUERIES"
 	fi
-	read -p 'Clean SERPs? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p 'Clean SERPs? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		rm "$SERP_PREFIX" "$SERP_PREFIX.top10" "$SERP_PREFIX.top100" \
 			"$SERP_PREFIX.postings" "$SERP_PREFIX.top10.postings" \
 			"$SERP_PREFIX.top100.postings"
 	fi
-	read -p 'Clean relations? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p 'Clean relations? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ -e $RELEVANT && ($REPLY =~ ^[Yy]$) ]]
 	then
 		rm "$RELEVANT"
 	fi
-	read -p 'Clean metrics? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p 'Clean metrics? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		rm "$METRICS" "$STAT" "$RIR" "$RIR.top10" "$RIR.top100" "$REL" "$RET"
@@ -118,7 +128,9 @@ function f1 {
 	echo '1. Indexing from: ' $CACM_CORPUS ' to: ' $LUCENE_INDEX
 	java org.apache.lucene.demo.IndexFiles -docs $CACM_CORPUS -index $LUCENE_INDEX
 
-	read -p '1. Indexing completed. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '1. Indexing completed. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -147,7 +159,9 @@ function f2 {
 		gsub(":,",    "\",") ;
 		gsub("/n",    "\\/n") ; print $0 }' > $QUERIES
 
-	read -p '2. Query preparation completed. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '2. Query preparation completed. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -168,7 +182,9 @@ function f3 {
 	## SERP all
 	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 4000 > $SERP_PREFIX
 
-	read -p '3. SERPs collected. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '3. SERPs collected. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -209,7 +225,9 @@ function f4 {
 		}
 		{ln++;}' $SERP_PREFIX.postings > $SERP_PREFIX.trec_results
 
-	read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -234,7 +252,9 @@ function f5 {
 
 	awk '{printf NF"\n"}' $RELEVANT > $REL
 
-	read -p '5. Relations prepared. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '5. Relations prepared. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
@@ -300,11 +320,18 @@ function f6 {
 		echo '';
 	done >> $TRECEVAL_OUT'.csv';
 
-read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
+	if [ -z "${a}" ]; then
+		read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
+	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
 		exit 1
 	fi
+}
+
+usage() {
+	echo "Usage: $0 [-ac]" 1>&2;
+	exit 1;
 }
 
 #-------------------------------------------------------------------------------
@@ -313,16 +340,24 @@ read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 
 f0
 
-while getopts ":c" o; do
-	case "$o" in
+while getopts "hac" o; do
+	case "${o}" in
+	h)
+		usage
+		exit 1
+		;;
+	a)
+		a=1
+		echo 'never prompt / always yes' >&2
+		;;
 	c)
 		echo 'Cleaning out . . .' >&2
 		clean
-		exit 0
+		exit 1
 		;;
 	\?)
 		echo "Invalid option: -$OPTARG" >&2
-		exit 1
+		exit 0
 		;;
 	esac
 done
