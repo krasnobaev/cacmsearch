@@ -68,19 +68,19 @@ function clean {
 #===============================================================================
 function f0 {
 	echo '0. Environment check'
-#	JAVA_HOME=/usr/lib/jvm/default-java/
-#	export JAVA_HOME	echo 'Current CLASSPATH: ' $CLASSPATH
-#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/core/lucene-core-4.6.1.jar
-#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/queryparser/lucene-queryparser-4.6.1.jar
-#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/demo/lucene-demo-4.6.1.jar
-#	CLASSPATH=$CLASSPATH:/usr/local/bin/lucene/analysis/common/lucene-analyzers-common-4.6.1.jar
-#	JAVA_HOME=/usr/lib/jvm/default-java/
-	echo 'Following files must be contained in CLASSPATH:'
-	echo '   lucene/core/lucene-core-4.6.1.jar'
-	echo '   lucene/queryparser/lucene-queryparser-4.6.1.jar'
-	echo '   lucene/demo/lucene-demo-4.6.1.jar'
-	echo '   lucene/analysis/common/lucene-analyzers-common-4.6.1.jar'
-#	export CLASSPATH
+
+	if [ -z "$JAVA_HOME" ]; then
+		echo 'Warning. JAVA_HOME environment variable is not set.';
+	fi
+
+	echo "$CLASSPATH" | grep -q "lucene-core-4.6.1.jar" || \
+		echo 'Warning. lucene-core-4.6.1.jar not found. Please check CLASSPATH environment variable.'
+	echo "$CLASSPATH" | grep -q "lucene-queryparser-4.6.1.jar" || \
+		echo 'Warning. lucene-queryparser-4.6.1.jar not found. Please check CLASSPATH environment variable.'
+	echo "$CLASSPATH" | grep -q "lucene-demo-4.6.1.jar" || \
+		echo 'Warning. lucene-demo-4.6.1.jar not found. Please check CLASSPATH environment variable.'
+	echo "$CLASSPATH" | grep -q "lucene-analyzers-common-4.6.1.jar" || \
+		echo 'Warning. lucene-analyzers-common-4.6.1.jar not found. Please check CLASSPATH environment variable.'
 
 	# Corpora
 	# CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
