@@ -111,13 +111,13 @@ function f2 {
 	echo '2. Query preparation'
 	# 1. extract questions
 	grep -Pzo "^[.]W(\n[^.][[:print:]]*)*" < $CACM_RAWQUERIES | \
-	# 2. get rid of unnecessary line feeds
-	tr '\n' ' ' | \
+	# 2. get rid of unnecessary line feeds and spaces
+	awk '{gsub(/^ */,"",$1); printf "%s ", $0}' | \
 	# 3. split one query per line
 	awk '{ gsub(".W ", "\n") ; print $0 }' | \
-	# 4. remove double spaces and save results
-	awk '{ gsub(/^ */,"",$1) ; print $0 }' > $QUERIES
-	
+	# 4. remove first line (it's empty)
+	awk '/./' > $QUERIES
+
 	# 5. removing some syntactical errors
 	awk '{ gsub("", "") ; print $0 }' $QUERIES
 
