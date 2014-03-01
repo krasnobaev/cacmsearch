@@ -9,15 +9,15 @@
 # REQUIREMENTS : ---
 # AUTHOR : Aleksey Krasnobaev (https://github.com/krasnobaev)
 # COMPANY : 
-# VERSION : 0.1 / 02/23/2014 05:03:52 AM MSK
+# VERSION : 0.2 / 02/23/2014 05:03:52 AM MSK
 # LICENSE : MIT
 #===============================================================================
 # Not a function file:
 1;
 
 A(:,1) =      REL = load ("cacm.relevant.sum");
-A(:,2) =      RET = load ("cacm.lucene.returned.sum");
-A(:,3) = tp = RIR = load ("cacm.lucene.returned.relevant_items");
+A(:,2) =      RET = load ("cacm.lucene.returned.items.sum");
+A(:,3) = tp = RIR = load ("cacm.lucene.returned.relevant.items.sum");
 A(:,4) = fp = RET .- tp;
 A(:,5) = fn = REL .- tp;
 A(:,6) = tn = 3204-(tp.+fp.+fn);
@@ -43,7 +43,7 @@ plot(P,R,'.');
 ylabel('Precision');
 xlabel('Recall');
 
-csvwrite ("cacm.lucene.metrics.csv", A')
-csvwrite ("cacm.lucene.statistics.csv", B')
-print ("cacm.lucene.precision_recall.png")
+csvwrite ("cacm.lucene.results.octave.csv", A')
+csvwrite ("cacm.lucene.results.octave.stat.csv", B')
+print ("cacm.lucene.results.octave.precision_recall.png")
 

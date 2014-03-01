@@ -9,7 +9,7 @@
 # REQUIREMENTS :---
 # AUTHOR : Aleksey Krasnobaev (https://github.com/krasnobaev)
 # COMPANY : ---
-# VERSION : 0.1 / 02/10/2014 10:38:53 PM MSK
+# VERSION : 0.2 / 02/10/2014 10:38:53 PM MSK
 # LICENSE : MIT
 #===============================================================================
 
@@ -37,23 +37,23 @@ function clean {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
-		rm "$SERP_PREFIX" "$SERP_PREFIX.top10" "$SERP_PREFIX.top100" \
-			"$SERP_PREFIX.postings" "$SERP_PREFIX.top10.postings" \
-			"$SERP_PREFIX.top100.postings" "$RET" "$SERP_PREFIX.trec_results"
+		rm "$SERP" "$SERP.top10" "$SERP.top100" \
+			"$RETURNED" "$RETURNED.top10" \
+			"$RETURNED.top100" "$RET" "$TRECEVAL_INPUT"
 	fi
 	if [ -z "${a}" ]; then
 		read -p 'Clean relations? ' -n 1 -r; printf '\n'
 	else REPLY='Y'; fi
 	if [[ -e $RELEVANT && ($REPLY =~ ^[Yy]$) ]]
 	then
-		rm "$RELEVANT" "$REL" "$RELEVANT.trec_qrels"
+		rm "$RELEVANT" "$REL" "$TRECEVAL_QRELS"
 	fi
 	if [ -z "${a}" ]; then
 		read -p 'Clean metrics? ' -n 1 -r; printf '\n'
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
-		rm "$METRICS" "$STAT" "$RIR" "$RIR.top10" "$RIR.top100" "$TRECEVAL_OUT" \
+		rm "$OCTAVE_OUT" "$OCTAVE_STAT" "$RIR" "$RIR.top10" "$RIR.top100" "$TRECEVAL_OUT" \
 			"$TRECEVAL_OUT.csv"
 	fi
 }
@@ -82,6 +82,8 @@ function f0 {
 	echo "$CLASSPATH" | grep -q "lucene-analyzers-common-4.6.1.jar" || \
 		echo 'Warning. lucene-analyzers-common-4.6.1.jar not found. Please check CLASSPATH environment variable.'
 
+	command -v trec_eval >/dev/null 2>&1 || { echo >&2 ':( trec_eval is not installed.'; }
+
 	# Corpora
 	# CACM1DIR='ftp://ftp.cs.cornell.edu/pub/smart/cacm/'
 	# CACM2='http://ir.dcs.gla.ac.uk/resources/test_collections/cacm/cacm.tar.gz'
@@ -103,21 +105,26 @@ function f0 {
 	SE_PREFIX='lucene'
 	QUERIES=$CORPUS_PREFIX'.queries'
 	RELEVANT=$CORPUS_PREFIX'.relevant'
-	SERP_PREFIX=$CORPUS_PREFIX'.'$SE_PREFIX'.returned'
+	SERP=$CORPUS_PREFIX'.'$SE_PREFIX'.serp'
+	RETURNED_PREFIX=$CORPUS_PREFIX'.'$SE_PREFIX'.returned'
+	RESULTS_PREFIX=$CORPUS_PREFIX'.'$SE_PREFIX'.results'
+
+	# Prepared data
+	TRECEVAL_INPUT=$RETURNED_PREFIX'.trec_results'
+	TRECEVAL_QRELS=$RELEVANT.trec_qrels
+	RETURNED=$RETURNED_PREFIX'.items'
 
 	# Base metrics
-	RIR=$SERP_PREFIX'.relevant_items'
+	RIR=$RETURNED_PREFIX'.relevant.items.sum'
 	# Relevant Items
 	REL=$RELEVANT'.sum'
 	# Retrieved Items
-	RET=$SERP_PREFIX'.sum'
+	RET=$RETURNED_PREFIX'.items.sum'
 
-	METRICS=$CORPUS_PREFIX'.'$SE_PREFIX'.metrics.csv'
-	STAT=$CORPUS_PREFIX'.'$SE_PREFIX'.statistics.csv'
-	TRECEVAL_OUT=$CORPUS_PREFIX'.'$SE_PREFIX'.trec'
-
-	command -v trec_eval >/dev/null 2>&1 || { echo >&2 ':( trec_eval is not installed.'; }
-
+	# Complex metrics
+	OCTAVE_OUT=$RESULTS_PREFIX'.octave.csv'
+	OCTAVE_STAT=$RESULTS_PREFIX'.octave.stat.csv'
+	TRECEVAL_OUT=$RESULTS_PREFIX'.trec'
 }
 
 #===  FUNCTION  ================================================================
@@ -176,11 +183,11 @@ function f3 {
 	echo '3. Retrieval running / SERP gathering'
 	PARAMS="-index $LUCENE_INDEX -queries $QUERIES"
 	## SERP 10
-	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP_PREFIX.top10
+	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 10 > $SERP.top10
 	## SERP 100
-	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 100 > $SERP_PREFIX.top100
+	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 100 > $SERP.top100
 	## SERP all
-	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 4000 > $SERP_PREFIX
+	java org.apache.lucene.demo.SearchFiles $PARAMS -paging 4000 > $SERP
 
 	if [ -z "${a}" ]; then
 		read -p '3. SERPs collected. Continue? ' -n 1 -r; printf '\n'
@@ -201,29 +208,29 @@ function f4 {
 	awk '$2 ~ /total/ {printf $1" ";}
 		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
 		gsub(".html", " "); printf $0;}
-		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX.top10 | \
-		awk '/./' > $SERP_PREFIX.top10.postings
+		$1 ~ /Searching/ {printf "\n";}' < $SERP.top10 | \
+		awk '/./' > $RETURNED.top10
 
 	awk '$2 ~ /total/ {printf $1" ";}
 		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
 		gsub(".html", " "); printf $0;}
-		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX.top100 | \
-		awk '/./' > $SERP_PREFIX.top100.postings
+		$1 ~ /Searching/ {printf "\n";}' < $SERP.top100 | \
+		awk '/./' > $RETURNED.top100
 
 	awk '$2 ~ /total/ {printf $1" ";}
 		$1 ~ /[[:digit:]]*\./ {gsub(/.*CACM-/, "");
 		gsub(".html", " "); printf $0;}
-		$1 ~ /Searching/ {printf "\n";}' < $SERP_PREFIX | \
-		awk '/./' > $SERP_PREFIX.postings
+		$1 ~ /Searching/ {printf "\n";}' < $SERP | \
+		awk '/./' > $RETURNED
 
-	grep "total matching" $SERP_PREFIX | awk '{print $1}' > $RET
+	grep "total matching" $SERP | awk '{print $1}' > $RET
 
 	awk 'BEGIN {ln=1;} {
 			for(i=2; i<=NF; i++) {
 				printf ln" Q0 CACM-"$i" "i-1" "(NF-i+0.1)/NF" STANDARD\n"
 			}
 		}
-		{ln++;}' $SERP_PREFIX.postings > $SERP_PREFIX.trec_results
+		{ln++;}' $RETURNED > $TRECEVAL_INPUT
 
 	if [ -z "${a}" ]; then
 		read -p '4. Data extracted from SERPs. Continue? ' -n 1 -r; printf '\n'
@@ -254,7 +261,7 @@ function f5 {
 
 	awk '$1 {gsub(/^0/,"");}
 		{printf $1" Q0 CACM-"$2" 1\n";}' $CACM_RELS \
-		> $RELEVANT.trec_qrels
+		> $TRECEVAL_QRELS
 
 	if [ -z "${a}" ]; then
 		read -p '5. Relations prepared. Continue? ' -n 1 -r; printf '\n'
@@ -274,7 +281,7 @@ function f6 {
 
 	# count number of intersected documents for each query
 	for i in {1..64}; do
-		cat <(head --lines=$i $SERP_PREFIX.top10.postings | \
+		cat <(head --lines=$i $RETURNED.top10 | \
 				tail --lines=1 && \
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
@@ -283,7 +290,7 @@ function f6 {
 	done > $RIR.top10
 
 	for i in {1..64}; do
-		cat <(head --lines=$i $SERP_PREFIX.top100.postings | \
+		cat <(head --lines=$i $RETURNED.top100 | \
 				tail --lines=1 && \
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
@@ -292,7 +299,7 @@ function f6 {
 	done > $RIR.top100
 
 	for i in {1..64}; do
-		cat <(head --lines=$i $SERP_PREFIX.postings | \
+		cat <(head --lines=$i $RETURNED | \
 				tail --lines=1 && \
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
@@ -300,9 +307,9 @@ function f6 {
 			grep " 2 " | wc -l;
 	done > $RIR
 
-	./metrics
+	./octave_eval
 
-	trec_eval -q $RELEVANT.trec_qrels $SERP_PREFIX.trec_results \
+	trec_eval -q $TRECEVAL_QRELS $TRECEVAL_INPUT \
 		> $TRECEVAL_OUT
 
 	printf "metric\query, " > $TRECEVAL_OUT'.csv'
@@ -380,21 +387,22 @@ else
 	f2
 fi
 
-if [[ -s $SERP_PREFIX && (-s $SERP_PREFIX.top10) && (-s $SERP_PREFIX.top100) ]]
+if [[ -s $SERP && (-s $SERP.top10) && (-s $SERP.top100) ]]
 then
 	echo 'SERPs exist, SERP gathering skipping'
 else
 	f3
 fi
 
-if [[ -s $SERP_PREFIX.postings && (-s $SERP_PREFIX.postings) && (-s $SERP_PREFIX.postings) ]]
+if [[ -s $RETURNED && (-s $RETURNED.top10) && (-s $RETURNED.top100) && \
+	(-s $RET) && (-s $TRECEVAL_INPUT) ]]
 then
 	echo 'SERP postings exist, SERP postings generation skipping'
 else
 	f4
 fi
 
-if [[ -s $RELEVANT ]]
+if [[ -s $RELEVANT && (-s $REL) && (-s $TRECEVAL_QRELS) ]]
 then
 	echo 'Relations exist, Relations postings generation skipping'
 else
