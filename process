@@ -81,7 +81,6 @@ function f0 {
 		echo 'Warning. lucene-demo-4.6.1.jar not found. Please check CLASSPATH environment variable.'
 	echo "$CLASSPATH" | grep -q "lucene-analyzers-common-4.6.1.jar" || \
 		echo 'Warning. lucene-analyzers-common-4.6.1.jar not found. Please check CLASSPATH environment variable.'
-
 	command -v trec_eval >/dev/null 2>&1 || { echo >&2 ':( trec_eval is not installed.'; }
 
 	# Corpora
@@ -91,6 +90,9 @@ function f0 {
 	# CACM3='http://dg3rtljvitrle.cloudfront.net/cacm.tar.gz'
 	# CACM3DIR='http://www.search-engines-book.com/collections/'
 
+	CORPUS_PREFIX='cacm'
+	SE_PREFIX='lucene'
+
 	# Input
 	CACM_CORPUS='/usr/data/cacm/search-engines-book.com/cacm.html/'
 	CACM_RAWQUERIES='/usr/data/cacm/ftp.cs.cornell.edu/query.text'
@@ -98,11 +100,10 @@ function f0 {
 
 	# Work folders
 	LUCENE_INDEX='/usr/data/index/lucene/cacm2/'
-	# WORKFOLDER='~/git/cacmsearch'
+	SCRIPTFOLDER=$(pwd)
+	WORKFOLDER=$CORPUS_PREFIX'.'$SE_PREFIX'.'$(date +%Y-%m-%d_%H-%m-%S)
 
 	# File prefixes
-	CORPUS_PREFIX='cacm'
-	SE_PREFIX='lucene'
 	QUERIES=$CORPUS_PREFIX'.queries'
 	RELEVANT=$CORPUS_PREFIX'.relevant'
 	SERP=$CORPUS_PREFIX'.'$SE_PREFIX'.serp'
@@ -275,7 +276,7 @@ function f5 {
 #===  FUNCTION  ================================================================
 # NAME : f6
 # DESCRIPTION : Results Comparing
-#==============================================================================
+#===============================================================================
 function f6 {
 	echo '6. Results comparing'
 
@@ -307,7 +308,7 @@ function f6 {
 			grep " 2 " | wc -l;
 	done > $RIR
 
-	./octave_eval
+	$SCRIPTFOLDER/octave_eval
 
 	trec_eval -q $TRECEVAL_QRELS $TRECEVAL_INPUT \
 		> $TRECEVAL_OUT
@@ -373,6 +374,9 @@ while getopts "hac" o; do
 	esac
 done
 
+mkdir $WORKFOLDER
+cd $WORKFOLDER
+
 if [[ -e $LUCENE_INDEX/segments.gen ]]
 then
 	echo 'Index exists, skipping indexing'
@@ -410,4 +414,6 @@ else
 fi
 
 f6
+
+cd ..
 
