@@ -70,7 +70,7 @@ function f0 {
 	echo '0. Environment check'
 
 	if [ -z "$JAVA_HOME" ]; then
-		echo 'Warning. JAVA_HOME environment variable is not set.';
+		echo 'Warning. JAVA_HOME environment variable is not set.'
 	fi
 
 	echo "$CLASSPATH" | grep -q "lucene-core-4.6.1.jar" || \
@@ -140,7 +140,7 @@ function f1 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
@@ -171,7 +171,7 @@ function f2 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
@@ -194,7 +194,7 @@ function f3 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
@@ -237,7 +237,7 @@ function f4 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
@@ -268,7 +268,7 @@ function f5 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
@@ -286,7 +286,7 @@ function f6 {
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
-			grep " 2 " | wc -l;
+			grep " 2 " | wc -l
 	done > $RIR.top10
 
 	for i in {1..64}; do
@@ -295,7 +295,7 @@ function f6 {
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
-			grep " 2 " | wc -l;
+			grep " 2 " | wc -l
 	done > $RIR.top100
 
 	for i in {1..64}; do
@@ -304,7 +304,7 @@ function f6 {
 			head --lines=$i $RELEVANT | \
 				tail --lines=1) | \
 		tr ' ' '\n' | awk /./ | sort | uniq -c | \
-			grep " 2 " | wc -l;
+			grep " 2 " | wc -l
 	done > $RIR
 
 	./octave_eval
@@ -314,7 +314,7 @@ function f6 {
 
 	printf "metric\query, " > $TRECEVAL_OUT'.csv'
 	for y in $(awk '{print $2;}' $TRECEVAL_OUT | sort -g | uniq); do
-		printf "%s, " "$y" >> $TRECEVAL_OUT'.csv';
+		printf "%s, " "$y" >> $TRECEVAL_OUT'.csv'
 	done
 	echo >> $TRECEVAL_OUT'.csv'
 	for x in $(
@@ -322,27 +322,27 @@ function f6 {
 			sort | uniq -c | sort -k1,1rn -t'_' -k2,2n | \
 			awk '{print $2;}'
 		); do
-		printf "%s, " "$x";
+		printf "%s, " "$x"
 		for y in $(awk '{print $2;}' $TRECEVAL_OUT | sort -g | uniq); do
 			grep "^$x " $TRECEVAL_OUT | \
 				grep -P "\t$y\t" | \
-				awk '{printf $3", "}';
-		done;
-		echo '';
-	done >> $TRECEVAL_OUT'.csv';
+				awk '{printf $3", "}'
+		done
+		echo ''
+	done >> $TRECEVAL_OUT'.csv'
 
 	if [ -z "${a}" ]; then
 		read -p '6. Results compared. Continue? ' -n 1 -r; printf '\n'
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 1
+		exit 0
 	fi
 }
 
 usage() {
-	echo "Usage: $0 [-ac]" 1>&2;
-	exit 1;
+	echo "Usage: $0 [-ac]" 1>&2
+	exit 0
 }
 
 #-------------------------------------------------------------------------------
@@ -355,7 +355,7 @@ while getopts "hac" o; do
 	case "${o}" in
 	h)
 		usage
-		exit 1
+		exit 0
 		;;
 	a)
 		a=1
@@ -364,11 +364,11 @@ while getopts "hac" o; do
 	c)
 		echo 'Cleaning out . . .' >&2
 		clean
-		exit 1
+		exit 0
 		;;
 	\?)
 		echo "Invalid option: -$OPTARG" >&2
-		exit 0
+		exit 1
 		;;
 	esac
 done
