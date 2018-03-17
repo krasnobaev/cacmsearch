@@ -141,7 +141,7 @@ function f1 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
@@ -172,7 +172,7 @@ function f2 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
@@ -195,7 +195,7 @@ function f3 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
@@ -238,7 +238,7 @@ function f4 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
@@ -269,7 +269,7 @@ function f5 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
@@ -337,13 +337,13 @@ function f6 {
 	else REPLY='Y'; fi
 	if [[ $REPLY =~ ^[Nn]$ ]]
 	then
-		exit 0
+		return 1
 	fi
 }
 
 usage() {
 	echo "Usage: $0 [-ac]" 1>&2
-	exit 0
+	return 0
 }
 
 #-------------------------------------------------------------------------------
@@ -377,11 +377,17 @@ done
 mkdir $WORKFOLDER
 cd $WORKFOLDER
 
+# rewrite to $LUCENE_INDEX''segments.gen
 if [[ -e $LUCENE_INDEX/segments.gen ]]
 then
 	echo 'Index exists, skipping indexing'
 else
 	f1
+	if [ $? == 1 ]
+	then
+		echo 'User exit'
+		exit 0
+	fi
 fi
 
 if [[ -s $QUERIES ]]
@@ -389,6 +395,11 @@ then
 	echo 'Queries exist, query preparation skipping'
 else
 	f2
+	if [ $? == 1 ]
+	then
+		echo 'User exit'
+		exit 0
+	fi
 fi
 
 if [[ -s $SERP && (-s $SERP.top10) && (-s $SERP.top100) ]]
@@ -396,6 +407,11 @@ then
 	echo 'SERPs exist, SERP gathering skipping'
 else
 	f3
+	if [ $? == 1 ]
+	then
+		echo 'User exit'
+		exit 0
+	fi
 fi
 
 if [[ -s $RETURNED && (-s $RETURNED.top10) && (-s $RETURNED.top100) && \
@@ -404,6 +420,11 @@ then
 	echo 'SERP postings exist, SERP postings generation skipping'
 else
 	f4
+	if [ $? == 1 ]
+	then
+		echo 'User exit'
+		exit 0
+	fi
 fi
 
 if [[ -s $RELEVANT && (-s $REL) && (-s $TRECEVAL_QRELS) ]]
@@ -411,6 +432,11 @@ then
 	echo 'Relations exist, Relations postings generation skipping'
 else
 	f5
+	if [ $? == 1 ]
+	then
+		echo 'User exit'
+		exit 0
+	fi
 fi
 
 f6
